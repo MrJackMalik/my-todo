@@ -1,59 +1,36 @@
-import React, { Component } from 'react'
-import TodoItems from './components/TodoItems.jsx'
-import TodoList from './components/TodoList.jsx'
+import "./App.scss"
+import { useState, useRef } from "react"
+import { List } from "./components"
+import { ListItem } from "./components"
+import { SortList } from "./components"
+function App() {
+    const elInput = useRef()
+    const [todos, setTodos] = useState(JSON.parse((window.localStorage.getItem("todos")) || []))
 
-class App extends Component {
-  inputElement = React.createRef()
-  constructor() {
-    super()
-    this.state = {
-      items: [],
-      currentItem: {
-        text: '',
-        key: '',
-      },
-    }
-  }
-  deleteItem = key => {
-    const filteredItems = this.state.items.filter(item => {
-      return item.key !== key
-    })
-    this.setState({
-      items: filteredItems,
-    })
-  }
+    const handleInputValue = (evt) => {
+        evt.preventDefault()
+        const newTodo = {
+            id: todos.at(-1)?.id ? todos.at(-1).id + 1 : 1,
+            // text: evt.target.value,
+            text: elInput.current.value,
+            isCompleted: false
+        }
+        setTodos([...todos, newTodo]);
+        evt.current.value = " "
 
-  handleInput = e => {
-    const itemText = e.target.value
-    const currentItem = { text: itemText, key: Date.now() }
-    this.setState({
-      currentItem,
-    })
-  }
-  addItem = e => {
-    e.preventDefault()
-    const newItem = this.state.currentItem
-    if (newItem.text !== '') {
-      const items = [...this.state.items, newItem]
-      this.setState({
-        items: items,
-        currentItem: { text: '', key: '' },
-      })
     }
-  }
-  render() {
+    window.localStorage.setItem("todos", JSON.stringify(todos))
     return (
-      <div className="App">
-        <TodoList
-          addItem={this.addItem}
-          inputElement={this.inputElement}
-          handleInput={this.handleInput}
-          currentItem={this.state.currentItem}
-        />
-        <TodoItems entries={this.state.items} deleteItem={this.deleteItem} />
-      </div>
-    )
-  }
-}
+        <div className="App">
+            <form onSubmit={handleInputValue}>
+                <input ref={elInput} type="text" placeholder="Type" />
+                <button type="submit">Submit</button></form>
+            {todos.length > 0 && <List>{todos.map(e => (
+                <ListItem key={e.id} item={e} todos={todos} setTodos={setTodos}>{e.id + " " + e.text}</ListItem>
+            ))}</List>}
+            <SortList ></SortList>
 
+        </div>
+    )
+}
 export default App
